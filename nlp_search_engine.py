@@ -7,9 +7,13 @@ Original file is located at
     https://colab.research.google.com/drive/10Xgwg2OPU-Wre8hs9BYOnG-wcQsmwN9I
 
 # Inverse indexing, index search, and signal page rank¶
-
-## PART I: Preparing the documents/webpages
 """
+
+#!curl -O https://ftp.wangqr.tk/.tmp/si650/arxivData.json
+#!curl -O https://ftp.wangqr.tk/.tmp/si650/plot_data.npy
+#!curl -O https://ftp.wangqr.tk/.tmp/si650/worddic_2000.npy
+
+"""## PART I: Preparing the documents/webpages"""
 
 # Load libraries
 
@@ -123,6 +127,10 @@ worddic['neural'][:30]
 """# PART III: Rank and return (BM25)"""
 
 def rank_bm25(searchsentence):
+    # searchsentence: 'image caption'
+    # 
+
+
     # split sentence into individual words 
     searchsentence = searchsentence.lower()
     try:
@@ -135,12 +143,17 @@ def rank_bm25(searchsentence):
 
     # remove words if not in worddic
     words = [word for word in words if word in worddic]
+    # words = ['image', 'caption']
     numwords = len(words)
+    # numwords = 2
     
     docs = {}
     for word in set(words):
         for doc in worddic[word]:
             docs[doc[0]] = 0
+
+    # docs[k]: 第k篇文章的得分
+
     
     num_docs = len(plottest)
     avg_dl = sum(len(x) for x in plottest) / num_docs
@@ -156,9 +169,16 @@ def rank_bm25(searchsentence):
         QTF = (k3 + 1) * query_term_weight / (k3 + query_term_weight)
         for doc in worddic[word]:
             doc_term_count = len(doc[1])
+
+            title_tokens = data[doc[0]]['title'].lower().split()
+            doc_term_count += title_tokens.count(word) * 0.5
+
             doc_size = len(plottest[doc[0]])
             TF = (k1 + 1) * doc_term_count / (k1 * (1 - b + b * doc_size / avg_dl) + doc_term_count)
             docs[doc[0]] += IDF * TF * QTF
+
+    
+
     
     result = list(docs.items())
     result.sort(key = lambda x: -x[1])
@@ -181,7 +201,8 @@ def author_recommend(q: str):
         for index, author in enumerate(eval(data[r[0]]['author'])):
             author_name = author['name']
             if author_name not in authors:
-                authors[author_name] = (r[1] * (0.81**index), [data[r[0]]])
+                # First paper of certain author
+                authors[author_name] = (r[1] * (0.8**index) , [data[r[0]]])
             else:
                 # index: a integer, the position of the author
                 # authors: a dict, the key is author name, the value is a tuple: (score, list of papers)
@@ -192,10 +213,10 @@ def author_recommend(q: str):
                 #else:
                 #    new_score = r[1] * (0.7**index)
 
-                authors[author_name] = ((authors[author_name][0] + new_score), authors[author_name][1] + [data[r[0]]])
+                #authors[author_name] = ((authors[author_name][0] + new_score), authors[author_name][1] + [data[r[0]]])
                 #authors[author_name] = (max(authors[author_name][0], new_score), authors[author_name][1] + [data[r[0]]])
                 #authors[author_name] = (authors[author_name][0] + (log((len(authors[author_name][1])+2)/(len(authors[author_name][1])+1))) * new_score), authors[author_name][1] + [data[r[0]]])
-                #authors[author_name] = (authors[author_name][0] + (0.9 ** len(authors[author_name][1]) * new_score), authors[author_name][1] + [data[r[0]]])
+                authors[author_name] = (authors[author_name][0] + (0.8 ** len(authors[author_name][1]) * new_score), authors[author_name][1] + [data[r[0]]])
 
     authors = [(x, y[0], y[1]) for x, y in authors.items()]
     authors.sort(key = lambda x: -x[1])
@@ -344,10 +365,4 @@ for index, x in enumerate(result):
 print(f'MAP = {sum_ap / len(ground_truth_image_caption)}')
 print(f'prec@10 = {prec_10 / 10}')
 print(f'prec@30 = {prec_30 / 30}')
-
-len(plottest)
-
-data[0]['title']
-
-data[2314]
 
