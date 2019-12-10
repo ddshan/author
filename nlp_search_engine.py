@@ -185,6 +185,7 @@ else:
     np.save('worddic_2000.npy', worddic)
 
 
+
 # In[43]:
 
 
@@ -504,7 +505,7 @@ def author_recommend(q: str):
             else:
                 authors[author_name] = (authors[author_name][0] + r[1] * (0.8**index), authors[author_name][1] + [data[r[0]]])
     authors = [(x, y[0], y[1]) for x, y in authors.items()]
-    authors.sort(key = lambda x: x[1])
+    authors.sort(key = lambda x: -x[1])
     return authors
 
 
@@ -539,7 +540,6 @@ author_recommend('convolutional neural network')
 # - Add feedback mechanism
 
 # In[ ]:
-
 
 
 
