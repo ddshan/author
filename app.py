@@ -17,7 +17,7 @@ def index():
 def author():
     keyword = request.form['keyword']
     results = author_recommend(keyword)
-    return render_template('author.html', results=results[:100], length=len(results))
+    return render_template('author.html', results=results[:100], length=len(results), query=keyword)
 
 if __name__ == '__main__':
     app.run(debug=True)
